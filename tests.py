@@ -8,79 +8,105 @@ from scipy.stats import shapiro
 
 #   READ FILE
 df1 = pd.read_excel("data1/data_avap.xlsx")
-#print(df1)
 
 #   SET FIRST COLUMN AS HEADER
 headers = df1.iloc[0]
 df  = pd.DataFrame(df1.values[1:], columns=headers)
-#print(df)
 
 #   SELECT SINGLE COLUMN
 #column_x = df['ED01_01']
-#print(column_x)
 
 #   SELECT MULTIPLE COLUMNS
-###column_xy = df.iloc[1:,[2,7]]
-#column_xy = df[['ED01_01','REF']]
-#print(column_xy)
+#column_xy = df[['ED01_01','REF']] OR column_xy = df.iloc[1:,[2,7]]
 
 #   COUNT FREQUENCES
 #counter = column_x.value_counts()
-#print('--------------- COUNTS ---------------')
-#print(counter)
 
-#	ARRAY: INDEPENDET VARIABLES
-iv1 = [df['ED01_01'],df['ED02_01'],df['ED03_01'], df['ED04_01'], df['ED05_01'],df['ED06_01'],df['ED07_01'], df['ED08_01']]
-iv2 = [df['ED25_01'],df['ED26_01'],df['ED27_01'], df['ED28_01'], df['ED29_01'],df['ED30_01'],df['ED31_01'], df['ED32_01']]
+#	ARRAYS
+ratings1 = [df['ED01_01'],df['ED02_01'],df['ED03_01'], df['ED04_01'], df['ED05_01'],df['ED06_01'],df['ED07_01'], df['ED08_01']]
+ratings2 = [df['ED25_01'],df['ED26_01'],df['ED27_01'], df['ED28_01'], df['ED29_01'],df['ED30_01'],df['ED31_01'], df['ED32_01']]
 
+#	GAUSSIAN DISTRIBUTION, MEAN, STANDARD DEVIATION (respective of one column in r: ratings)
+for r in ratings1: 
+	print('------------------------------------------------')
+	#print(r)
 
-## TOTAL MEAN OF A LIST
+	print('_______________________GD')
+	data = r
+	stat, p = shapiro(data)
+	print('stat=%.3f, p=%.3f' % (stat, p))
+	if p > 0.05:
+		print('Probably Gaussian')
+	else:
+		print('Probably not Gaussian')
+
+	mean = r.mean()
+	print('_______________________MEAN')
+	print(mean)
+
+	sd = r.std()
+	print('_______________________SD')
+	print(sd)
+
+	print('------------------------------------------------')
+
+#	TOTAL MEAN OF A LIST 
 totalmean1 = 0
-for v in iv1:
-	mean = v.mean()
+for r in ratings1:
+	mean = r.mean()
 	totalmean1 = totalmean1 + mean
 	#print('_______________________MEAN')
 	#print(mean)
 
-print('_______________________TOTAL MEAN1')
+print('_______________________TOTAL MEAN of RATING 1')
 print(totalmean1 / 8)
 
 totalmean2 = 0
-for v in iv2:
-	mean = v.mean()
+for r in ratings2:
+	mean = r.mean()
 	totalmean2 = totalmean2 + mean
 	#print('_______________________MEAN')
 	#print(mean)
 
-print('_______________________TOTAL MEAN2')
+print('_______________________TOTAL MEAN of RATING 2')
 print(totalmean2 / 8)
-
 
 ## LIST OF MEANS 1
 meanlist1 = []
 
-for v in iv1:
-	mean = v.mean()
+for r in ratings1:
+	mean = r.mean()
 	#print('_______________________MEAN')
 	#print(mean)
 	meanlist1 = meanlist1 + [mean]
 
-print('_______________________MEANlist1')
+print('_______________________LIST of MEANS (RATING 1)')
 print(meanlist1)
 
 ## LIST OF MEANS 2
 meanlist2 = []
 
-for v in iv2:
-	mean = v.mean()
+for r in ratings2:
+	mean = r.mean()
 	#print('_______________________MEAN')
 	#print(mean)
 	meanlist2 = meanlist2 + [mean]
 
-print('_______________________MEANlist2')
+print('_______________________LIST of MEANS (RATING 2)')
 print(meanlist2)
 
-# Example of the Mann-Whitney U Test
+#   VISUALIZATIONS FREQUENCES
+for r in ratings1: 
+	graph = r.plot(kind='hist',bins=[0,1,2,3,4,5,6,7,8,9])
+	graph.set_xticklabels('')
+	graph.set_xticks([1,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10], minor=True)
+	graph.set_xticklabels(['','1','2','3','4','5','6','7','8','9'], minor=True)
+	plt.title(r)
+	plt.show(graph)
+
+# 	TESTS
+print('------------------------------------------------')
+print('-------------- MANN-WHITNEY U TEST -------------')
 from scipy.stats import mannwhitneyu
 stat, p = mannwhitneyu(meanlist1, meanlist2)
 print('stat=%.3f, p=%.3f' % (stat, p))
@@ -89,35 +115,10 @@ if p > 0.05:
 else:
 	print('Probably different distributions')
 
-
 """
-#	GAUSSIAN DISTRIBUTION, MEAN, STANDARD DEVIATION
-for v in iv: 
-	print('------------------------------------------------')
-	#rating1 = df['ED01_01']
-	print(v)
-
-	print('_______________________GD')
-	data = v
-	stat, p = shapiro(data)
-	print('stat=%.3f, p=%.3f' % (stat, p))
-	if p > 0.05:
-		print('Probably Gaussian')
-	else:
-		print('Probably not Gaussian')
-
-	mean = v.mean()
-	print('_______________________MEAN')
-	print(mean)
-
-	sd = v.std()
-	print('_______________________SD')
-	print(sd)
-
-
 print('------------------------------------------------')
 print('------------------- Friedman -------------------')
-stat, p = friedmanchisquare(iv[0], iv[1], iv[2])
+stat, p = friedmanchisquare(ratings[0], ratings[1], ratings[2])
 print('stat=%.3f, p=%.3f' % (stat, p))
 if p > 0.05:
 	print('Probably the same distribution')
@@ -126,7 +127,7 @@ else:
 print('------------------------------------------------')
 print('-------------------- ANOVA ---------------------')
 from scipy.stats import f_oneway
-stat, p = f_oneway(iv[0], iv[1], iv[2])
+stat, p = f_oneway(ratings[0], ratings[1], ratings[2])
 print('stat=%.3f, p=%.3f' % (stat, p))
 if p > 0.05:
 	print('Probably the same distribution')
@@ -138,20 +139,10 @@ print('------------------------------------------------')
 print('-------------------- Kruskal ---------------------')
 # Example of the Kruskal-Wallis H Test
 from scipy.stats import kruskal
-stat, p = kruskal(iv[0],iv[1],iv[2],iv[3],iv[4],iv[5],iv[6],iv[7])
+stat, p = kruskal(ratings[0],ratings[1],ratings[2],ratings[3],ratings[4],ratings[5],ratings[6],ratings[7])
 print('stat=%.3f, p=%.3f' % (stat, p))
 if p > 0.05:
 	print('Probably the same distribution')
 else:
 	print('Probably different distributions')
-
-
-#   VISUALIZATIONS FREQUENCES
-for v in iv: 
-	graph = v.plot(kind='hist',bins=[0,1,2,3,4,5,6,7,8,9])
-	graph.set_xticklabels('')
-	graph.set_xticks([1,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10], minor=True)
-	graph.set_xticklabels(['','1','2','3','4','5','6','7','8','9'], minor=True)
-	plt.title(v)
-	plt.show(graph)
 """
